@@ -1,0 +1,19 @@
+2/7/2002
+
+문법/기획을 다음과 같이 정리하다
+- top-level declaration은 항상 analysis, template, signature의 정의가 온다.
+  즉, analysis 알맹이들 (domdec, semdec, querydec등)이
+  "analysis A = ana ... end"라는 보자기로 감싸지 않고 선언되는 일은 없다.
+
+  이유: 선언되는 이름들이 중복되는 것을 금지하는 단위가
+        개개의 보따리로 하고자 하는데, 보자기 없이 선언된
+        domdec등을 허락하면 금지 단위의 처리가 복잡해진다.
+
+- analysis, template, signature의 정의는 중첩될 수 없다.
+  이유: 간단함.
+
+- longid가 올 수 있는 곳을 신경쓰지 않았었던것을 정리하였다.
+
+
+
+

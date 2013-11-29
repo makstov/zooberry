@@ -1,0 +1,61 @@
+(*====================================================================*)
+(*  You-il Kim, The LET Project, KAIST                                *)
+(*--------------------------------------------------------------------*)
+(*  Copyright(c) 2001 Research On Program Analysis System             *)
+(*  National Creative Research Initiative Center                      *)
+(*  Korea Advanced Institute of Science & Technology                  *)
+(*  http://ropas.kaist.ac.kr                                          *)
+(*--------------------------------------------------------------------*)
+(*  All rights reserved. This file is distributed under the terms of  *)
+(*  an Open Source License.                                           *)
+(*====================================================================*)
+
+
+open RabbitAst
+
+(*
+    val match_elmtid: elmtid -> pat -> bool
+    val match_exp: exp -> pat -> bool
+    val match_setexp: setexp -> pat -> bool
+*)
+
+fun match_elmtid (s,r) =
+    (
+        fn (WildPat) => true
+         | (OrPat (pat_list)) => List.exists (match_elmtid (s,r)) pat_list
+         | (ConstPat (ElmtIdConst (s',r'))) => s = s'
+         | (_) => false
+    )
+
+fun match_const (ElmtIdConst elmtid) =
+    (
+        fn (pat) => match_elmtid elmtid pat
+    )
+  | match_const (const) =
+    (
+        fn (WildPat) => true
+         | (ConstPat const') => (const = const')
+         | (_) => false
+    )
+
+fun match_exp (ConstExp (const,r)) =
+    (
+        fn (pat) => match_const const pat
+    )
+  | match_exp (TupleExp (exp_list,r)) =
+    (
+        fn (WildPat) => true
+         | (TuplePat pat_list) => match_exp_list exp_list pat_list
+         | (_) => false
+    )
+  | match_exp (_) =
+    (
+        fn (WildPat) => true
+         | (_) => false
+    )
+
+and match_exp_list [] [] = true
+  | match_exp_list (exp_list) [] = false
+  | match_exp_list [] (pat_list) = false
+  | match_exp_list (exp::exp_list) (pat::pat_list) = 
+        (match_exp exp pat) andalso (match_exp_list exp_list pat_list)

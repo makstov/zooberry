@@ -1,0 +1,859 @@
+\documentclass[a4paper,landscape]{slides}
+\usepackage{proof,latexsym,eepic,psfig}
+\input{macroA}\input{macroB}
+\usepackage{cousot/galois.sty/galois}
+
+% bi-lingual support
+\def\bilingual{0}
+\def\korean{1}
+\def\english{2}
+\def\H#1#2{\ifcase\language #1\ \ #2\or #1 \else #2\fi}
+% In TeX source \let\language\{bilingual,korean,english}
+% The default is bilingual
+\let\language\bilingual
+\newcommand{\NEW}{\ensuremath{\surd\quad}}
+\newcommand{\mc}[3]{\multicolumn{#1}{#2}{#3}}
+\newcommand{\m}[1]{\ensuremath{#1}}
+\newcommand{\nt}[1]{{\it #1}}      % non-terminal symbol
+\newcommand{\tl}[1]{\mbox{\tt #1}} % terminal symbol
+\newcommand{\sugar}{\dagger}
+\newcommand{\la}{\langle}
+\newcommand{\ra}{\rangle}
+\newcommand{\may}[1]{\m{\la#1\ra}}
+\newcommand{\dom}[1]{\mbox{Dom}\:#1}
+\newcommand{\ran}[1]{\mbox{Ran}\:#1}
+\newcommand{\finmap}{\stackrel{\mbox{\tiny fin}}{\rightarrow}}
+\newcommand{\leteq}{\stackrel{\mbox{\tiny let}}{=}}
+\newcommand{\define}{\stackrel{\mbox{\tiny def}}{=}}
+\newcommand{\recshift}[1]{\m{\overline{#1}}}
+\newcommand{\has}{\ni}
+\newcommand{\eg}[1]{\vskip5pt\begin{SmallCmode}#1\end{SmallCmode}}
+\newcommand{\notype}[2]{\m{#1\vdash#2}}
+\newcommand{\spec}{\m{\nt{spec}}}
+\newcommand{\E}{\m{\nt{E}}}
+\newcommand{\da}{\downarrow}
+\newcommand{\ua}{\uparrow}
+\newcommand{\Meta}[1]{{\it #1\/}}
+\newcommand{\ff}[1]{\lbrack\!\lbrack #1 \rbrack\!\rbrack }
+\newenvironment{tp}[1]{\begin{slide}\heading{#1}}{\end{slide}}
+\newcommand{\heading}[1]{
+        \begin{flushleft}
+                \large{$\Box$ \bf #1}\\*[-.9em]
+                \rule{\textwidth}{.1cm}
+        \end{flushleft}}
+
+\title{System Zoo Workshop}
+\author{
+  Kwangkeun Yi \& Youil Kim\\
+  \\
+  Research On Program Analysis System \\
+  {\tt ropas.kaist.ac.kr}\\
+  Dept. of Computer Science\\
+  KAIST (Korea Advanced Institute of Science \& Technology)
+}
+\date{\today}
+
+\bd
+%%%%%%%%%%%
+\begin{center}
+\vspace{1cm}
+{\LARGE Zoo Workshop}\\
+\ \\
+\vskip+50pt
+\ \\
+  Research On Program Analysis System \\
+%  {\tt ropas.kaist.ac.kr}\\
+  Dept. of Computer Science\\
+  KAIST\\
+\end{center}
+\newpage
+%%%%%%%%%%%%%%
+%\begin{slide}
+%  \thispagestyle{empty}
+%  \maketitle
+%  \addtocounter{slide}{-1}
+%\end{slide}
+%%%%%%%%%%%%%%
+\begin{tp}{An Ensemble}
+\bi
+\item abstract interpretation [CC77,CC92a,CC95b]
+%\footnote{
+%\bibskip
+%[CC77]
+%Patrick Cousot and Radhia Cousot.
+%\newblock Abstract interpretation: A unified lattice model for static analysis
+%  of programs by construction or approximation of fixpoints.
+%\newblock In {\em ACM Symposium on Principles of Programming Languages}, pages
+%  238--252, 1977.
+%
+%\bibskip
+%[CC92a]
+%Patrick Cousot and Radhia Cousot.
+%\newblock Abstract interpretation frameworks.
+%\newblock {\em Journal of Logic Computation}, 2(4):511--547, 1992.
+%
+%\bibskip
+%[CC95b]
+%Patrick Cousot and Radhia Cousot.
+%\newblock Formal language, grammar and set-constraint-based program analysis by
+%  abstract interpretation.
+%\newblock In {\em Proceedings of Functional Programming Languages and Computer
+%  Architecture}, pages 170--181, 1995.
+%}
+%
+\item conventional data flow analysis [KU76,KU77,Hec77,RP86]
+%\footnote{
+%\bibskip
+%[KU76]
+%John~B. Kam and Jeffrey~D. Ullman.
+%\newblock Global data flow analysis and iterative algorithm.
+%\newblock {\em Journal of the ACM}, 23(1):158--171, 1976.
+%\bibskip
+%[KU77]
+%John~B. Kam and Jeffrey~D. Ullman.
+%\newblock Monotone data flow analysis frameworks.
+%\newblock {\em Acta Informatica}, 7:305--317, 77.
+%\bibskip
+%[Hec77]
+%Matthew~S. Hecht.
+%\newblock {\em Flow Analysis of Comptuer Programs}.
+%\newblock Elsevier North-Holland, Inc., 1977.
+%\bibskip
+%[RP86]
+%Barbara~G. Ryder and Marvin~C. Paull.
+%\newblock Elimination algorithms for data flow analysis.
+%\newblock {\em ACM Computing Surveys}, 18(3):277--316, September 1986.
+%}
+\item constraint-based analysis [Hei92,AH95]
+%\footnote{
+%\bibskip
+%[Hei92b]
+%Nevin Heintze.
+%\newblock {\em Set Based Program Analysis}.
+%\newblock PhD thesis, Carnegie Mellon University, October 1992.
+%\bibskip
+%[AH95]
+%Alex Aiken and Nevin Heintze.
+%\newblock Constraint-based program analysis.
+%\newblock Tutorial Notes of the ACM Symposium on Principles of Programming
+%  Languages, January 1995.
+%}
+\item model checking [CGP99]
+%\footnote{
+%\bibskip
+%[CGP99]
+%E.~M. Clarke, Orna Grumberg, and Doron Peled.
+%\newblock {\em Model Checking}.
+%\newblock The MIT Press, 1999.
+%}
+\ei
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Use of Each Framework in Zoo}
+\bi
+\item specification variations
+
+- abstract interpretation
+
+- data flow analysis
+
+- constraint-based analysis
+
+\item query about analysis result
+
+- model checking: computation-tree-logic(CTL) formula over analysis results
+\ei
+\end{tp}
+%%%%%%%%%%%%%%
+%\begin{slide}
+%%\begin{center}
+%%\input{zoo.eepic}
+%%\end{center}
+%\centerline{\psfig{figure=zoo.eps,height=12cm}}
+%
+%\end{slide}
+%%%%%%%%%%%%%%
+\begin{tp}{Every Program Analysis}
+Given a program 
+\bi
+\item step 1: set-up equations
+\item step 2: solve the equations
+ \bi
+ \item solution = finite flow graph $\la$abstract program states, flows$\ra$
+ \ei
+\item step 3: make sense of the solution
+ \bi
+ \item checking some properties = model checking
+ \ei
+\ei
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Abstract Semantics}
+Skeleton for Data Flow Equations
+
+Program:
+\[
+\begin{array}{rcll}
+e &::=& z\;|\; x &\mbox{integer/variable}\\
+  &|& e_1\;\tl{+}\;e_2 &\mbox{primitive operation}\\
+  &|& x\;\tl{:=}\; e &\mbox{assignment}\\
+  &|& e\;\tl{;}\; e &\mbox{sequence}\\
+  &|& \tl{if}\; e_1\;e_2\;e_3 &\mbox{choice}
+\end{array}
+\]
+Abstract semantics:
+\[
+\begin{array}{lrcl}
+\lefteqn{s\;\in\;\nt{State}=\nt{Var}\to\nt{Sign}}\\
+\lefteqn{\E\;\in\;\nt{Expr}\times\nt{State}\to\nt{Sign}\times\nt{State}}\\ \\
+&\quad\E(z,s) &=& ({\hat z},s)\\
+&\quad\E(x,s) &=& (s(x),s) 	  \\
+&\E(x\tl{:=}e, s) &=& \nt{let}\; (v_1,s_1) = \E(e,s)\\
+&                 && \nt{in}\; (v_1, s_1[v_1/x])\\
+%			\quad\mbox{(* state update *)}\\
+&\E(e_1\tl{;}e_2, s) &=&\nt{let}\; (v_1,s_1) = \E(e_1,s)\\
+&                &&\quad\;    (v_2,s_2) = \E(e_2,s_1)\\
+&                &&\nt{in}\; (v_2,s_2)\\
+&\E(e_1\tl{+}e_2, s) &=&\nt{let}\; (v_1,s_1) = \E(e_1,s)\\
+&                  &&\quad\;   (v_2,s_2) = \E(e_2,s_1)\\
+&                  &&\nt{in}\; (\nt{add}(v_1,v_2),s_2)\\
+&\E(\tl{if}\;e_1\;e_2\;e_3, s) &=&\nt{let}\; (v_1,s_1) = \E(e_1,s)\\
+& 		&&\quad\; (v_2,s_2) = \E(e_2,s_1)\\
+&		&&\quad\; (v_3,s_3) = \E(e_3,s_1)\\
+&		&&\nt{in}\; (v_2,s_2)\sqcup(v_3,s_3)
+\end{array}
+\]
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Side: Correctness}
+Analysis designer's job, not Zoo's:
+\[
+\begin{array}{lcl}
+\mbox{fix}{\cal F} &
+%\stackrel{\stackrel{\alpha}{\longrightarrow}}
+%	 {\stackrel{\longleftarrow}{\tiny\gamma}} &
+%\stackrel{\longrightarrow^\alpha}{\longleftarrow_\gamma} &
+\galois{\alpha}{\gamma} &
+\mbox{fix}F
+%
+%a F <= F' a
+%Then     a(lfp F) <= join_i(F'^i(bot)).
+%
+\end{array}
+\]
+where
+\[\mbox{fix}F = \ff{\E}\quad\mbox{and}\quad\mbox{fix}{\cal F} = \ff{\cal E}\]
+of
+\[
+\begin{array}{l}
+F\;\in\;(\nt{Expr}\times\nt{State}\to\nt{Sign}\times\nt{State})
+    \to (\nt{Expr}\times\nt{State}\to\nt{Sign}\times\nt{State})\\
+{\cal F}\;\in\;(\nt{Expr}\times{\cal S}\nt{tate}
+                \to{\cal I}{nt}\times{\cal S}\nt{tate})
+    \to (\nt{Expr}\times{\cal S}\nt{tate}
+         \to{\cal I}{nt}\times{\cal S}\nt{tate})
+\end{array}
+\]
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Setting-up Equations}
+\[
+  \overbrace{
+    \underbrace{\tl{x := 1;}}_1\;
+    \underbrace{\tl{y := x+1}}_2
+            }^0
+\]
+\[
+\begin{array}{lclclcl}
+\lefteqn{X_i^\da\in\nt{State}\qquad X_i^\ua\in\nt{Sign}\times\nt{State}}\\ \\
+X_0^\da &=&\bot  &\quad& X_0^\ua &=& X_2^\ua\\
+&&&&&&\\
+X_1^\da &=& X_0^\da && X_1^\ua &=& (X_{1a}^\ua.1,\quad X_{1a}^\ua.2[X_{1a}^\ua.1/x])\\
+&&&&&&\\
+X_2^\da &=& X_1^\ua.2 && X_2^\ua &=& (X_{2a}^\ua.1,\quad X_{2a}^\ua.2[X_{2a}^\ua.1/y])\\
+&&&&&&\\
+X_{2a}^\da &=& X_2^\da && X_{2a}^\ua &=& (\nt{add}(X_2^\da.2(x),1),\quad X_2^\da.2)
+\end{array}
+\]
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Solution: Fixpoint and Flow Graph}
+Fixpoint: equation solution $(X_i^\da, X_i^\ua)$.
+
+Flow graph:
+\[
+\begin{array}{lclclcl}
+%X_0^\da &\leftarrow&\Meta{start}  
+&&&\quad& X_0^\ua &\leftarrow& X_2^\ua\\
+&&&&&&\\
+X_1^\da &\leftarrow& X_0^\da && X_1^\ua &\leftarrow& X_{1a}^\ua\\
+&&&&&&\\
+X_2^\da &\leftarrow& X_1^\ua.2 && X_2^\ua &\leftarrow& X_{2a}^\ua\\
+%&&&&&&\\
+%&&&& X_2^\ua &\leftarrow& X_{2a}^\ua\\
+&&&&&&\\
+X_{2a}^\da &\leftarrow& X_2^\da && X_{2a}^\ua &\leftarrow& X_2^\da
+\end{array}
+\]
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Query on Solution about Program Properties}
+Model checking 
+\bi
+\item model = the flow graph 
+\item formula = CTL formula
+ \bi
+ \item modality = $\{{\tt A}, {\tt E}\}\times
+                   \{{\tt G}, {\tt F}, {\tt X}, {\tt U}\}$
+ \item body = first-order predicate over $X_i^\da$ and $X_i^\ua$
+ \ei
+\ei
+Query examples:
+\[
+X_i^\ua\in\nt{Sign}\times\nt{State}
+\]
+\bi
+\item Does variable {\tt v} remain positive?
+ \[{\tt AG}(X^\ua.2({\tt v})=\oplus)\]
+\item Can variable {\tt v} be positive?
+ \[{\tt EF}(X^\ua.2({\tt v})=\oplus)\]
+\item Does variable {\tt v} remain positive until
+{\tt w} is negative? 
+ \[{\tt AU}(X^\ua.2({\tt v})=\oplus,\;\; X^\ua.2({\tt w})=\ominus)\]
+\ei
+We can also query at a particular program point:
+\bi
+\item annotate program text with CTL formula
+ \bi
+ \item ``From here, does variable {\tt v} remain positive?''
+ \ei
+\ei
+\begin{Cmode}
+    v := x+y;
+    ## AG($X^\ua.2$(v)=$\oplus$) 
+    if v > 0 then v := v-2 else v := v+1;
+    ...
+\end{Cmode}
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Higher-order Case}
+Program:
+\[
+\begin{array}{rcll}
+e &::=&  x &\mbox{variable}\\
+  &|& \lambda x. e &\mbox{abstraction}\\
+  &|& e_1\; e_2 &\mbox{application}
+\end{array}
+\]
+Abstract semantics:
+\[
+\begin{array}{lcl}
+s &\in&\nt{State}=\nt{Var}\to 2^\nt{Expr} \\
+\E&\in&\nt{Expr}\times\nt{State}\to 2^\nt{Expr}
+\end{array}
+\]
+\[
+\begin{array}{rclr}
+\E(x,s) &=& s(x)&\\
+\E(\lambda x.e,s) &=& \{\lambda x.e\}&\\
+\E(e_1\; e_2,s) &=&\nt{let}\;\{\lambda x_i.e_i'\} = \E(e_1,s) &\\
+     &&\quad\; v = \E(e_2,s) &\\  
+     &&\nt{in}\;\sqcup_i\E(e_i', s\sqcup \{x_i\mapsto v\})	&
+\end{array}
+\]
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Setting-up Equations}
+\begin{minipage}{3in}
+\[
+\overbrace{\underbrace{(\lambda x. \overbrace{x\; 1}^3)}_1
+           \underbrace{(\lambda y.y)}_2
+          }^0
+\]
+\end{minipage}
+\ \
+\begin{minipage}{5in}
+\[
+\begin{array}{lclclcl}
+\lefteqn{X_i^\da\in\nt{State}\qquad X_i^\ua\in 2^\nt{Expr}}\\ \\
+X_0^\da &=& \bot   &\quad&
+X_0^\ua &=& \sqcup_{\lambda x_i.e_i\in X_1^\ua}X_{e_i}^\ua\\
+&&&&&&\\
+X_1^\da &=& X_0^\da &     & X_1^\ua &=& (\lambda x.x\; 1)\\
+&&&&&&\\
+X_2^\da &=& X_0^\da &     & X_2^\ua &=& (\lambda y.y)\\
+&&&&&&\\
+\lefteqn{X_{e_i}^\da = X_0^\da\sqcup \{x_i\mapsto X_2^\ua\}
+\qquad\mbox{for each\ }\lambda x_i.e_i\in X_1^\ua}\\
+%\lefteqn{\mbox{after some iterations}}\\
+%X_3^\da &=& X_2^\ua.2[X_2^\ua.1/X_1^\ua.1.param] &&
+%X_3^\ua &=& X_{X_2^\ua.1.body}^\ua[1/X_2^\ua.1.param]\\
+%\lefteqn{\mbox{continues}}\\
+\end{array}
+\]
+\end{minipage}
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Solution: Fixpoint and Flow Graph}
+%\[
+%\begin{array}{lclclcl}
+%X_0^\da &=& \bot   &\quad& X_0^\ua &=& X_{X_1^\ua.1.body}^\ua\\
+%&&&&&&\\
+%X_1^\da &=& X_0^\da   &     & X_1^\ua &=& (\lambda x.x\; 1, X_0^\da)\\
+%&&&&&&\\
+%X_2^\da &=& X_1^\ua.2 &     & X_2^\ua &=& (\lambda y.y, X_1^\ua.2)\\
+%&&&&&&\\
+%\lefteqn{X_{X_1^\ua.1.body}^\da = X_2^\ua.2[X_2^\ua.1/X_1^\ua.1.param]}\\
+%%&&&&&&\\
+%%\lefteqn{\mbox{after some iterations}}\\
+%%&&&&&&\\
+%%X_3^\da &=& X_2^\ua.2[X_2^\ua.1/x] &&
+%%X_3^\ua &=& X_{X_2^\ua.1.body}^\ua[1/y]\\
+%%\lefteqn{\cdots}\\
+%\end{array}
+%\]
+As before, except that equations/flow edges are generated during
+fixpoint computation: 
+\[
+\begin{array}{lcl}
+ \begin{array}{l}
+ \mbox{generated equations}\\
+ \mbox{while solving}
+ \end{array}
+&\qquad&
+ \begin{array}{lcl}
+ %X_0^\da&\leftarrow&\bot
+ X_0^\ua &=& X_3^\ua\sqcup X_{2a}^\ua \\ \\
+ X_3^\da &=& X_0^\da\sqcup \{x\mapsto X_2^\ua\} \\ \\
+ X_{2a}^\da &=& X_0^\da\sqcup \{x\mapsto X_2^\ua\}\\ \\
+ \end{array}
+\end{array}
+\]
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Constraint-based Analysis}
+High-level skeleton for data flow equations
+\bi
+\item setting-up constraints
+\item propagating constraints (constraint closure)
+\item solution: either
+ \bi
+ \item the set of ``atomic'' constraints, or
+ \item a model of the ``atomic'' constraints
+ \ei
+\ei
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Naive Style Example}
+Program:
+\[
+\begin{array}{rcll}
+e &::=&  x &\mbox{variable}\\
+  &|& \lambda x. e &\mbox{abstraction}\\
+  &|& e_1\; e_2 &\mbox{application}
+\end{array}
+\]
+Constraint set:
+\[
+\begin{array}{lcll}
+\lefteqn{X\supset\Meta{se}}\\ \\
+\Meta{se}&::=&\mbox{lam}(x,e) & \Meta{atomic}\\
+         &|& \mbox{app}(X,X) &\\
+         &|& X &\\ \\
+X &\lefteqn{\mbox{at each expr or var}\quad\in 2^\Meta{Expr}}\\
+%X_x &\lefteqn{\mbox{at each var $x$}\quad\;\in 2^\Meta{Expr}\\
+\end{array}
+\]
+Setting-up constraints: %\hfill $e\vdash\cal C$
+\[
+\begin{array}{c}
+\infer{ x\vdash \{\}}{} \qquad\qquad
+\infer{\lambda x.e'\vdash \{X_e\supset\mbox{lam}(x,e')\}\cup C}
+      {e'\vdash C}\\
+\\
+\infer{e_1\;e_2\vdash \{X_e\supset\mbox{app}(X_{e_1},X_{e_2})\}\cup
+C_1\cup C_2}{e_1\vdash C_1\quad e_2\vdash C_2}
+\end{array}
+\]
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Solution: Fixpoint and Flow Graph}
+By the constraint propagation(closure) rules:
+\[
+\begin{array}{c}\\
+\infer{X_a\supset X_e,\; X_x\supset X_c}
+      {X_a\supset\mbox{app}(X_b,X_c),\; X_b\supset\mbox{lam}(x,e)}\\
+\\
+\infer{X_a\supset\Meta{atomic}}
+      {X_a\supset X_b,\; X_b\supset\Meta{atomic}}
+\end{array}
+\]
+\bi
+\item Solution: atomic constraints of $X_e\supset\mbox{lam}(x,e)$ from
+the closure      
+\item Flow graph: $X_e\leftarrow X_{e'}$ iff $X_e\supset X_{e'}$
+\ei
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Mixed Style: Constraint Rules + Equations}
+Atomic constraints with their interpretations = data flow equations
+
+Program:
+\[
+\begin{array}{rcll}
+e &::=& z & \mbox{integer}\\
+  &|& e\;+\; e &\mbox{addition}\\
+  &|& x &\mbox{variable}\\
+  &|& \lambda x. e &\mbox{abstraction}\\
+  &|& e_1\; e_2 &\mbox{application}
+\end{array}
+\]
+Constraint set:
+\[
+\begin{array}{lcll}
+\lefteqn{X\supset\Meta{se}}\\ \\
+\Meta{se}&::=&\mbox{lam}(x,e') &\Meta{atomic}\\
+         &|& \mbox{app}(X,X) &\\
+         &|& \mbox{add}(X,X) &\Meta{atomic}\\
+         &|& \hat{z} &\Meta{atomic}\\
+         &|& X &\\ \\
+X &\lefteqn{\mbox{for each expr or var}\quad\in2^\Meta{Expr} + 2^\Meta{Sign}}\\
+\end{array}
+\]
+Setting-up constraints: %\hfill $e\vdash\cal C$
+\[
+\begin{array}{c}
+\infer{z\vdash \{X_e\supset\hat{z}\}}\qquad\qquad
+\infer{ x\;\vdash\; \{\}}{} \\ \\
+\infer{\lambda x.e'\;\vdash\; \{X_e\supset\mbox{lam}(x,e')\}\cup C}
+      {e'\vdash C}\\ \\
+\infer{e_1\;e_2\;\vdash\;\{X_e\supset\mbox{app}(X_{e_1},X_{e_2})\}\cup
+C_1\cup C_2}{e_1\vdash C_1\quad e_2\vdash C_2}\\ \\
+\infer{e_1\;+\; e_2\;\vdash\; \{X_e\supset\mbox{add}(X_{e_1},X_{e_2})\}\cup
+C_1\cup C_2}{e_1\vdash C_1\quad e_2\vdash C_2}
+\end{array}
+\]
+\end{tp}
+%%%%%%%%%%%%%
+\begin{tp}{Solution: 2$\times$Fixpoint and Flow Graph}
+Constraint propagation:
+\[
+\begin{array}{c}
+\infer{X_a\supset X_e,\; X_x\supset X_c}
+      {X_a\supset\mbox{app}(X_b,X_c),\; X_b\supset\mbox{lam}(x,e)}\\ \\
+\infer{X_a\supset\Meta{atomic}}
+      {X_a\supset X_b,\; X_b\supset\Meta{atomic}}
+\end{array}
+\]
+As before, except that
+\bi
+\item the atomic constraints of the closure as data flow equations to solve: (e.g.)
+\ei
+%\begin{minipage}{3in}
+Atomic constraints
+\[
+\begin{array}{lll}
+X_1\supset\mbox{add}(X_2,X_2)&\quad&
+X_1\supset\mbox{add}(X_1,X_2)\\
+X_2\supset\hat{z_1}&&
+X_2\supset\mbox{add}(X_2,X_1)\\
+X_3\supset\mbox{lam}(x,e)&&
+X_3\supset\mbox{lam}(y,e')
+\end{array}
+\]
+are
+\[
+\begin{array}{l}
+X_1 = \mbox{add}(X_2,X_2)\;\;\sqcup\;\;\mbox{add}(X_1,X_2)\\
+X_2 = \{\hat{z_1}\}\;\;\sqcup\;\;\mbox{add}(X_2,X_1)\\
+X_3 = \mbox{lam}(x,e)\;\;\sqcup\;\;\mbox{lam}(y,e')
+\end{array}
+\]
+where
+\[
+\begin{array}{lcl}
+X_i&\in& 2^\Meta{Expr} + 2^\Meta{Sign}\\
+%\mbox{add}&\in&2^\Meta{Sign}\times 2^\Meta{Sign}\to 2^\Meta{Sign}\\
+\mbox{add}(X,X')&=&\{\mbox{pair-wise addition over $\Meta{Sign}$}\}\\
+\mbox{lam}(x,e) &=&\{\lambda x.e\}
+\end{array}
+\]
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{The Specification Language Rabbit}
+A language for expressing program analysis
+\bi
+\item Sound typing: typed Rabbit spec $\Rightarrow$ typeful nML programs
+ \bi
+ \item monomorphic typing with overloading ({\tt top}, {\tt bottom},
+{\tt +}, {\tt *})
+ \item type-inference system
+ \item primitive types = int, bool, user-defined sets/lattices
+ \item compound types = tuple, sum, collection, function
+ \ei
+\item Module system: named/parameterized analyses
+ \bi
+ \item analysis module with/without a parameter analysis
+ \item to be compiled into nML functors and structures
+ \ei
+\item User-defined sets and lattices, with widening/narrowing
+ \bi
+ \item $\{1 ... 10\},\;\{a,b,c\},\; 2^S,S_1\times S_2,\; 
+        S_1 + S_2,\; S_1\to S_2,\; \mbox{set of constraints}$
+ \item $S_\bot,\; 2^S,\; L_1\times L_2,\; L_1 + L_2,\; S\to L,\; L_1\to L_2,\;
+        \mbox{set with explicit join}$
+ \ei
+\item Semantic functions: first-order
+ \bi
+ \item equations, operations
+ \item constraints
+ \ei
+\item Constraint closure rules
+\item Guards: first-order predicates
+ \bi
+ \item in patterns, set comprehensions, CTL formula, closure rules
+ \ei
+\item Inter-operation with nML exprs and patterns
+ \bi
+ \item via int, bool, user-declared structures for sets/lattices
+ \ei
+\ei
+\end{tp}
+%%%%%%%%%%%%%%
+%\begin{tp}{Sets and Lattices}
+%Sets
+%\[
+%\begin{array}{l}
+%\{1 ... 10\},\quad\{a,b,c\},\quad 2^S, \\ \\
+%S_1\times S_2,\quad S_1 + S_2,\quad S_1\to S_2,\\ \\
+%\mbox{set of constraints}\\ \\
+%\end{array}
+%\]
+%Lattices
+%\[
+%\begin{array}{l}
+%S_\bot,\quad 2^S,\\ \\
+%L_1\times L_2,\quad L_1 + L_2,\quad S\to L,\quad L_1\to L_2,\\ \\
+%\mbox{set with explicit orders}
+%\end{array}
+%\]
+%$L_1\to L_2$ means only an atomic function lattice:
+%\bi
+%\item $\forall x\in L_1. x = \sqcup_i a_i\quad\quad\mbox{($a_i$ atoms)}$
+%\item $\forall x\in L_1. f(x=\sqcup_i a_i) = \sqcup_i f(a_i)$
+%\ei
+%A function is represented as a table for only the domain's atoms.
+%\end{tp}
+%%%%%%%%%%%%%%
+\begin{slide}
+{\footnotesize
+\begin{verbatim}
+analysis Eq =
+ ana
+   lattice A = power {a,b,c,d}
+
+   eqn x1 = x2 + x3 * {a,b}
+   and x2 = {b,c} * x3
+   and x3 = x1 + x2
+
+ end
+\end{verbatim}
+}
+\end{slide}
+%%%%%%%%%%%%%%
+%\begin{slide}
+%{\footnotesize
+%\begin{verbatim}
+%analysis Interval =
+% ana
+%   set Int = /int/
+%   set Limit = {Mi, Ma}
+%   lattice I = Int * Int + Int * Limit + Limit * Int + Limit * Limit
+%               with join ((a,b),(a',b')) =
+%                    let
+%                      fun max(x,y) = if x<=y then y else x
+%                      fun min(x,y) = if x<=y then x else y
+%                    in
+%                      (min(a,a'), max(b,b'))
+%                    end
+%   widen I with ((a,b),(a',b')) = if 
+% end
+%%%%%%%%%%%%%%
+\begin{tp}{Rabbit Example}
+{\footnotesize
+\begin{verbatim}
+analysis TinyCfa =
+ ana
+    set Var = /Exp.var/
+    set Lam = /Exp.expr/
+    lattice Val = power Lam
+    lattice State = Var -> Val
+
+    widen Val with {/Lam(x,Lam _)/ ...} => top
+
+    eqn E(/x/,s) = s(x)
+      | E(/Lam(x,e)/, s) = {/Lam(x,e)/}
+      | E(/App(e1,e2)/, s) = let val lams = E(/e1/, s)
+                                 val v = E(/e2/, s) 
+                             in
+                              +{ E(e,s+bot[/x/=>v]) | /Lam(x,e)/ from lams } 
+                             end
+ end
+\end{verbatim}
+}
+\end{tp}
+%%%%%%%%%%%%%%
+%\begin{tp}{Module}
+%{\footnotesize
+%\begin{verbatim}
+%analysis TinyGeneric(Cfa: sig end) =
+% ana
+%
+% end
+%\end{verbatim}
+%}
+%\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Rabbit Example}
+{\footnotesize
+\begin{verbatim}
+analysis Sba = 
+ ana
+   set Var = /Ast.id/
+   set Exp = /Ast.exp/
+   set Val = power Exp
+             constraint
+               var = {X} index Var + Exp
+               rhs = var
+                   | app(var, var)
+                   | lam(Var, Exp) : atomic
+
+
+
+
+
+
+
+
+   eqn Col /Ast.Var(x)/ = {}
+     | Col /Ast.Lam(x,body) as e/ = { X@/e/ <- lam(/x/,/body/) }
+                                  + Col /body/
+     | Col /Ast.App(e,e') as e/ = { X@/e/ <- app(X@/e/, X@/e'/) }
+                                  + Col /e/ + Col /e'/
+
+   ccr   X@a <- app(X@b, X@c), X@b <- lam(/x/, /body/)
+         -----------------------------------------
+         X@a <- X@/body/, X@/x/ <- X@c 
+ end
+\end{verbatim}
+}
+\end{tp}
+%%%%%%%%%%%%%%
+\begin{tp}{Rabbit Example}
+{\footnotesize
+\begin{verbatim}
+signature CFA = sig
+                  lattice Env
+                  lattice Fns = power /Ast.exp/
+                  eqn Lam: /Ast.exp/:index * Env -> Fns
+                end
+
+analysis ExnAnal(Cfa: CFA) =
+ ana
+   set Exp = /Ast.exp/        set Var = /Ast.var/       set Exn = /Ast.exn/
+   set UncaughtExns = power Exn 
+                      constraint
+                      var = {X, P} index Var + Exp
+                      rhs = var
+                          | app_x(/Ast.exp/, var)  |  app_p(/Ast.exp/, var)
+                          | exn(Exn)                         : atomic
+                          | minus(var, /Ast.exp/, power Exn) : atomic
+                          | cap(var, /Ast.exp/, Exn)         : atomic
+
+   eqn Col /Ast.Var(x)/ = {}
+     | Col /Ast.Const/ = {}
+     | Col /Ast.Lam(x,e)/ = Col /e/
+     | Col /e as Ast.Fix(f,x,e',e'')/ = Col /e'/ + Col /e''/
+                                      + { X@/e/ <- X@/e''/, P@/e/ <- P@/e''/ }
+     | Col /e as Ast.Con(e',k)/ = Col /e'/
+                                + { X@/e/ <- exn(/k/), P@/e/ <- P@/e'/ }
+     | Col /e as Ast.Decon(e')/ = Col /e'/
+                                + { X@/e/ <- X@/e'/, P@/e/ <- P@/e'/ }
+     | Col /e as Ast.Exn(k,e')/ = Col /e'/
+                                + { X@/e/ <- exn /k/, X@/e/ <- X@/e'/ }
+     | Col /e as Ast.App(e',e'')/ = Col /e'/ + Col /e''/
+                                + { X@/e/ <- app_x(/e'/, X@/e''/),
+                                    P@/e/ <- app_p(/e'/, X@/e''/),
+                                    P@/e/ <- P@/e'/, P@/e/ <- P@/e''/ }
+     | Col /e as Ast.Case(e',k,e'',e''')/ =
+                Col /e'/ + Col /e''/ + Col /e'''/
+                + { X@/e/ <- X@/e''/, X@/e/ <- X@/e'''/ }
+                + { P@/e/ <- P@/e'/, P@/e/ <- P@/e''/, P@/e/ <- P@/e'''/ }
+     | Col /e as Ast.Raise(e')/ = Col /e'/ + { P@e <- X@/e'/ }
+     | Col /e as Ast.Mraise(e',Ks)/ =
+                let
+                  val K = /Ast.list2set Ks/
+                in
+                  Col /e'/ + { P@e <- minus(X@/e'/,/e'/, K) }
+                end
+     | Col /e as Ast.Praise(e', k)/ =
+                Col /e'/ + { P@/e/ <- cap(X@/e'/,/e'/,/k/) }
+     | Col /e as Ast.Handle(e', f as Ast.Lam(x,e''))/ =
+                Col /e'/ + Col /e''/
+                + { X@/e/ <- X@/e'/, X@/e/ <- app_x(/f/, P@/e'/) }
+                + { X@/x/ <- P@/e'/, P@/e/ <- app_p(/f/, P@/e'/) }
+
+
+
+
+
+
+
+   (* constraint closure rules *)
+
+   ccr 
+        X@a <- app_x(/e/,X@b), /Ast.Lam(x,e')/ in post Cfa.Lam@/e/
+       -----------------------------------------
+             X@a <- X@/e'/, X@/x/ <- X@b
+    |
+        X@a <- app_x(/e/,P@b), /Ast.Lam(x,e')/ in post Cfa.Lam@/e/
+       -----------------------------------------
+            X@a <- X@/e'/, X@/x/ <- P@b
+    |
+        P@a <- app_p(/e/,X@b), /Ast.Lam(x,e')/ in post Cfa.Lam@/e/
+       -----------------------------------------
+            P@a <- P@/e'/, X@/x/ <- X@b
+    |
+        P@a <- app_p(/e/,P@b), /Ast.Lam(x,e')/ in post Cfa.Lam@/e/
+       -----------------------------------------
+            P@a <- P@/e'/, X@/x/ <- P@b
+
+
+
+
+   (* constraint image definition *)
+
+   cim exn(k) = {k}
+     | minus(X,/e/,K) = if /Ast.exncarryexn(e)/ then X
+                        else { x | x from X, not (x in K) }
+     | cap(X,/e/,k)   = if /Ast.exncarryexn(e)/ then X
+                        else { x | x from X, x = k }
+ end 
+\end{verbatim}
+}
+\end{tp}
+%%%%%%%%%%%%%%%%
+%\begin{tp}{}
+%\end{tp}
+%%%%%%%%%%%%%%%%
+%\begin{tp}{}
+%\end{tp}
+%%%%%%%%%%%%%%%%
+%\begin{tp}{}
+%\end{tp}
+%%%%%%%%%%%%%%%%
+%\begin{tp}{}
+%\end{tp}
+%%%%%%%%%%%%%%%%
+%
+\ed

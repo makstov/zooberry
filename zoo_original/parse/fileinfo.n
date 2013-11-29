@@ -1,0 +1,88 @@
+(*====================================================================*)
+(*  You-il Kim, The LET Project, KAIST                                *)
+(*--------------------------------------------------------------------*)
+(*  Copyright(c) 2001 Research On Program Analysis System             *)
+(*  National Creative Research Initiative Center                      *)
+(*  Korea Advanced Institute of Science & Technology                  *)
+(*  http://ropas.kaist.ac.kr                                          *)
+(*--------------------------------------------------------------------*)
+(*  All rights reserved. This file is distributed under the terms of  *)
+(*  an Open Source License.                                           *)
+(*====================================================================*)
+
+
+signature FileInfo =
+sig
+    val store_line_info: int -> unit
+    val set_token_start: int -> unit
+
+    val get_current_line_number: unit -> int
+    val get_current_line_start: unit -> int
+    val get_current_token_start: unit -> int
+    val get_loc: int -> Region.loc
+
+    (*
+    val clr_line_buffer: unit -> unit
+    val get_line_buffer: unit -> string
+    val store_token: string -> unit
+    *)
+end
+
+structure FileInfo: FileInfo =
+struct
+    val line_number = ref 1
+    val line_info_list = ref [0]
+    val token_start = ref 0
+
+    val initial_line_buffer = String.create 256
+    val line_buffer = ref initial_line_buffer
+    val buffer_index = ref 0
+
+    fun store_line_info pos = 
+        (
+            line_number := (!line_number) + 1;
+            line_info_list := pos::(!line_info_list)
+        )
+
+    (*
+    fun inc_line_number () = (line_number := (!line_number) + 1)
+    fun set_line_start pos = (line_start := pos)
+    *)
+
+    fun set_token_start pos = (token_start := pos)
+    fun get_current_line_number () = (!line_number)
+    fun get_current_line_start () = (List.hd (!line_info_list))
+    fun get_current_token_start () = (!token_start)
+
+    fun get_loc pos = 
+        let
+            fun get_loc2 line [] = (0, pos)
+              | get_loc2 line (pos'::l) = 
+                    if (pos >= pos') then (line, pos-pos'+1)
+                                     else get_loc2 (line-1) l
+        in
+            get_loc2 (!line_number) (!line_info_list)
+        end
+
+    (*
+    fun clr_line_buffer () = (line_buffer := initial_line_buffer)
+    fun get_line_buffer () = (String.sub (!line_buffer) 0 (!buffer_index))
+    fun store_token token =
+        let
+            val buffer_len = String.length (!line_buffer)
+            val token_len = String.length token
+        in
+            if (!buffer_index) + token_len > buffer_len then
+                let
+                    val new_line_buffer = String.create (buffer_len * 2)
+                in
+                    String.blit (!line_buffer) 0 new_line_buffer 0 buffer_len;
+                    line_buffer := new_line_buffer;
+                    store_token token
+                end
+            else
+                String.blit token 0 (!line_buffer) (!buffer_index) token_len;
+                buffer_index := (!buffer_index) + token_len
+        end
+    *)
+end

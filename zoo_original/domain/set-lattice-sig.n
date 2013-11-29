@@ -1,0 +1,83 @@
+signature SET =
+    sig
+	type elmt
+	type t = DUMMY | ELMT of elmt
+	val size : unit -> int
+	val enlist : unit -> t list
+	val ord : t -> int
+	val equiv : t * t  -> bool
+	val cmp : t * t -> order
+	val pp : t * TextIO.outstream * int -> unit
+    end
+
+signature INT_SET =
+    sig
+	type elmt = int
+	type t = DUMMY | ELMT of elmt
+	val size : unit -> int
+	val enlist : unit -> t list
+	val ord : t -> int
+	val equiv : t * t -> bool
+	val cmp : t * t -> order
+	val pp : t * TextIO.outstream * int -> unit
+    end
+
+signature LATTICE =
+    sig
+	type elmt and addr_t
+	type 'a t = BOT | TOP | ELMT of 'a
+	val addr : elmt t -> addr_t	(* unique for each element *)
+	val hash : elmt t -> int
+	val join : elmt t * elmt t -> elmt t
+	val le : elmt t * elmt t -> bool
+	val pp : elmt t * TextIO.outstream * int -> unit
+    end
+
+signature FLAT_LATTICE =
+    sig
+        structure Set : SET
+	type elmt = Set.t
+	type addr_t
+	type 'a t = BOT | TOP | ELMT of 'a
+	val addr : elmt t -> addr_t
+	val hash : elmt t -> int
+	val join : elmt t * elmt t -> elmt t
+	val le : elmt t * elmt t -> bool
+	val pp : elmt t * TextIO.outstream * int -> unit
+    end
+
+signature POWER_LATTICE =
+    sig
+	structure Set : SET
+	type elmt
+	type addr_t
+	type 'a t = BOT | TOP | ELMT of 'a
+	val addr : elmt t -> addr_t
+	val hash : elmt t -> int
+	val make : Set.t list -> elmt t
+	val join : elmt t * elmt t -> elmt t
+	val le : elmt t * elmt t -> bool
+	val enlist : elmt t -> Set.t list
+	val included : Set.t * elmt t -> bool
+	val pp : elmt t * TextIO.outstream * int -> unit
+	val hash_stat: TextIO.outstream -> unit
+    end
+
+signature FTN_LATTICE  =
+    sig
+	structure A: FLAT_LATTICE
+	structure B: LATTICE
+	type elmt and addr_t
+	type 'a t = BOT | TOP | ELMT of 'a
+	val hash : elmt t -> int
+	val addr : elmt t -> addr_t
+	val constant : B.elmt B.t -> elmt t
+	val dom : elmt t -> A.Set.t list
+	val join : elmt t * elmt t -> elmt t
+	val le : elmt t * elmt t -> bool
+	val apply : elmt t * A.elmt A.t -> B.elmt B.t
+	val update : elmt t * A.elmt A.t * B.elmt B.t -> elmt t
+	val dupdate : elmt t * A.elmt A.t * B.elmt B.t -> elmt t
+	val pp : elmt t * TextIO.outstream * int -> unit
+	val hash_stat: TextIO.outstream -> unit
+    end

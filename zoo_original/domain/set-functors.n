@@ -1,0 +1,43 @@
+functor RangeSetFun(val low__: int val high__: int) : INT_SET = 
+    struct
+        open Format
+	type elmt = int
+	type  t = DUMMY | ELMT of elmt (* DUMMY for dummy value
+					    needed for array initialization
+					    in semantics.sml *)
+	fun size() = high__ - low__ + 1
+	fun ord(ELMT(x)) = x - low__    (* from 0 to size-1 *)
+	fun equiv(ELMT x, ELMT y) = x=y
+	fun enlist() =
+	  let fun a'enlist (n) = 
+	        if n > high__ then []
+		else ELMT(n) :: (a'enlist (n+1))
+	  in a'enlist low__
+	  end
+	fun cmp(ELMT(x),ELMT(y)) = if x<y then LESS else
+	                 if x>y then GREATER else EQUAL
+	fun pp (ELMT(x),file,_) = output(file, format "%d" [INT(x)])
+	  | pp (DUMMY,file,_) = output(file, "_")
+    end
+
+functor IndexSetFun(val low__: int val high__:unit ->int) : INT_SET =
+    struct
+        open Format
+	type elmt = int
+	type t = DUMMY | ELMT of elmt	(* DUMMY for dummy value *)
+	fun size() = high__() - low__ + 1
+	fun ord(ELMT(x)) = x - low__    (* from 0 to size-1 *)
+	fun equiv(ELMT x, ELMT y) = x=y
+	fun enlist() =
+	  let fun a'enlist (n) = 
+	        if n > high__() then []
+		else ELMT(n) :: (a'enlist (n+1))
+	  in a'enlist low__
+	  end
+	fun cmp(ELMT(x),ELMT(y)) = if x<y then LESS else
+	                 if x>y then GREATER else EQUAL
+	fun pp (ELMT(x),file,_) = output(file, format "%d" [INT(x)])
+	  | pp (DUMMY,file,_) = output(file, "_")
+    end
+
+(* element/product/sum set code are generated online, because of the varying number of components *)

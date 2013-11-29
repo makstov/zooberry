@@ -1,0 +1,69 @@
+% Rabbit
+- static semantics handles type (lattice or set) structures, not type
+  (lattice or set) names; this will liberalize the spec writers. 6/25/2001
+
+- support for separate analysis: zoo's language issue or implemenation issue?
+  I think this is an implementation issue: fixpoint module을 구현할때
+  방정식이 없는 엔트리는 환경에서 가져오도록 하면된다.
+  eqn spec은 현재 analysis unit (= compilation unit)에 대한 eqn set-up
+  template. free name에 대한 solution은 환경에 이미 준비되 있다고 가정. 
+  eqn의 해답은 program point path에서 해답으로가는 테이블.
+  program point path = analysis unit ids * point id. point id는
+  프로그램 variable, function id등일 수도 있고 file의 offset일 수도 있다.
+
+  eqn eval(/Add(x,y)/, state) = eval(/x/, state)
+    | eval(/App(x,y)/, state) = eval(/x/, state)
+
+- model
+   state = point 
+   entry = {x,y,z}
+   transition relation = point graph
+   label = point -> pre * post
+
+- equation
+   set /point/: syntree
+   set /funid/: granule
+   eqn eval: /point/ * /funid/ * pre -> post
+   eqn eval (/Add(x,y)/,f,state) = eval(/x/,g,state)
+     | eval (/Add(x,y)/,f,state) = eval(/x/,g,state)
+
+   spec {s | [x in (eval@s).pre.write](EF x)}
+  
+- case e
+   of x:A => 2*x
+    | x:B => 2*x
+
+- set A = [1,10]
+  set B = /int/
+  set F = A -> B 
+  
+  {3 => 12, _ => 13} is a map 3 => 12 | _ => 13.
+
+- /1/ is of nml type int
+  1 is of rabbit type int
+
+- should boolean expressions be allowed?
+  monotonicity can be broken
+
+- function def have patterns like
+   fn {1=>2,2=>3,...} => 2 (* map functions with two such entries into  2 *)
+    | {1=>2,2=>4,...} => 3 (* ditto *)
+    | _ => 0  
+
+- zoo pattern can have nml pattern
+  eqn eval =
+    fn (/Add(x,y)/, state) => eval(/x/, state) + eval(/y/, state)
+     | (/Sub(x,y)/, state) => eval(/x/, state) * eval(/y/, state)
+
+- how to inter-operate between nml and zoo?
+  - int is shared in nml and zoo
+    thus "/numLabels/+1" is ok
+
+% Beetle
+
+- in order to define a set using a regular tree grammar
+  set A = /expr/
+  set C = A + App(C,C) + Loop(C)
+  where "App" and "Loop" are function symbols in tree grammar
+
+% Otter

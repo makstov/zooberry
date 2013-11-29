@@ -1,0 +1,213 @@
+(*
+ Kwangkeun Yi, The LET Project, KAIST
+   
+ Copyright(c) 2000 Research On Program Analysis System 
+ National Creative Research Initiative Center 
+ Korea Advanced Institute of Science & Technology
+ http://ropas.kaist.ac.kr
+
+ All rights reserved. This file is distributed under the terms of
+ an Open Source License.
+*)
+(*
+  System Zoo
+  Rabbit: abstract interpreter specification language
+*)
+
+SYNTAX
+(*
+  convention
+  - "x*" means zero or more "x"'s
+  - "x+" means one or more "x"'s
+  - "x,*,x" means zero or more "x"'s separated by ","
+  - "x,+,x" means one or more "x"'s separated by ","
+  - "[x]" means "x" is optional
+  - "(x|y)" means "x" or "y"
+*)
+
+setdec ::= set setbind
+setbind ::= setid = setexp [and setbind]
+setexp ::=
+   /tid/		// nml type id
+ | setid                // zoo set id
+ | {se,...,se}		// integer interval set
+ | {eid,*,eid}          // enumerated set
+ | power setexp         // power set
+ | setexp * setexp      // cartesian product
+ | setexp + setexp      // separated sum
+ | setexp -> setexp	// set of finite functions
+
+latdec ::= lattice latbind
+latbind ::= latid = latexp [and latbind]
+latexp ::=
+    /sid/                // nml structure id
+  | latid                // lattice id
+  | flat setexp          // flat lattice
+  | power setexp         // powerset lattice
+  | latexp * latexp      // cartesian product
+  | latexp + latexp      // coalesced sum       
+  | latexp -> latexp     // atomic function lattice
+  | setexp -> latexp     // dependent product lattice
+  | setexp order order|+|order   // lattice with explicit orders
+order ::= po pat
+       !  pat po pat po+po pat
+po ::= < | >
+
+widendec ::= widen latid with rule|+|rule
+
+se ::=          // set elmt expression
+    /expr/	// nml expr
+  | setexp      // set itself
+  | x		// bound name
+  | z           // integer
+  | eid         // element id
+  | se (+|*|-|/|**) se  // integer operation
+  | se (+|*|-) se    // set/map union/intersection/minus
+  | {se,...,se}      // int/enum interval set
+  | {se,*,se}        // set
+  | {se | qual}      // set comprehension
+  | {rule,+,rule}    // map
+  | {rule | qual}    // map comprehension
+  | + se        // fold union
+  | * se        // fold intersection
+  | se se       // map image
+  | (se)
+  | se : setid  // sum set injection/projection
+  ! (se,+,se)   // tuple 
+  ! se . i      // projection
+  ! se . setid  // projection
+  ! se [rule]        // modifying map or tuple
+  ! se [setid => se] // modifying tuple
+  ! mp rule |+| rule // map 
+
+le ::=          // lattice elmt expression
+    /expr/	// nml expr
+  | top
+  | bottom
+  | x           // bound name
+  | se : latid  // injecting into flat lattice
+  | le : setid  // projecting from flat lattice
+  | le : latid  // sum lattice injection/projection
+  | {se,...,se}      // int/enum interval set
+  | {se,*,se}        // set
+  | {se | qual}      // set comprehension
+  | {rule,+,rule}    // atomic map
+  | {rule | qual}    // atomic map comprehension
+  | le (+|*|-) le    // set/map union/intersection/minus
+  | le se       // map image
+  | le le       // map image
+  | le + le     // join
+  | le * le     // meet
+  | + le        // fold join
+  | * le        // fold meet
+  | (le)
+  ! (le,+,le)   // tuple
+  ! le . i      // projection
+  ! le . latid  // projection
+  ! le [rule]           // modifying map or tuple
+  ! le [latid => se]    // modifying tuple
+  ! mp rule |+| rule 	// atomic map
+
+e :: =          // spec expression
+     /expr/	// nml expr
+   | true | false
+   | se
+   | le
+   | x          // bound vars
+   | let dec+ in e end
+   | fn rule|+|rule // abstraction
+   | e e	    // application
+   ! case e of rule|+|rule
+
+/expr/ ::= `x'		// rabbit id 
+         | nml-exprs 	// nml exprs whose sub-expr can be a rabbit id
+
+dec ::= val vbind
+      | val rec vbind
+      ! fun fbind
+      ! map fbind
+vbind ::= pat = e [and vbind]
+fbind ::= id pat = e |+| id pat = e [and fbind]
+   
+edec ::= eqn rec vbind
+       ! eqn fbind
+kind ::= set setid : syntree
+       | set setid : granule
+type ::= eqn id : (setid|latid)* * *(setid|latid) -> 
+                  (setid|latid)* * *(setid|latid)
+spec ::= (setdec|latdec|widendec)* dec* (kind* type edec)*
+
+rule ::= pat => e 
+pat ::= /pat/		// nml pattern
+      | _		// wild pattern
+      | x		// pattern var
+      | {pat,*,pat [,...]}     // set pattern
+      | {pat,...,pat}          // interval set pattern
+      | {pat=>pat,*,pat=>pat [,...]}   // map pattern
+      | pat with guard  // guarded pattern
+      | pat or pat      // or pattern
+      | pat : (setid|latid)	// annotated pattern
+      | (pat)
+      ! z | top | bottom | eid	// const pattern: int/top/bottom/enum set elmt 
+      ! (pat,*,pat [,...])     				  // tuple pattern
+      ! {(setid|latid)=>pat,*,(setid|latid)=>pat [,...]}  // tuple pattern
+      ! pat as e	// eval pattern   == pat with pat = e
+      ! pat in e	// member pattern == pat with pat in e
+                        // Note that for the above sugars to resolve 
+			// the pat must be an expr.
+
+qual ::= gen,+,gen [, guard]
+gen ::= pat from e         // for each pat in set e
+      | pat => pat from e  // for each pat=>pat in map or tuple e
+guard ::= e rop e	   	// relation
+        | e in e		// membership
+        | not guard		
+        | guard and guard	
+        | guard or guard	
+        | ! gen . guard		// forall gen: guard
+        | ? gen . guard		// forsome gen: guard
+        ! guard , guard		// guard and guard
+rop ::= < | > | = | <= | >=
+
+// static property specification
+spec ::= spec ctl
+ctl ::= 		// CTL formula
+    | guard		// boolean expr
+    | not ctl
+    | ctl and ctl
+    | ctl or ctl
+    | ctl -> ctl	// implication
+    | A path		// for all paths
+    | E path		// for some path
+    ! ctl <-> ctl	// equivalence
+path ::= X ctl		// next
+       | F ctl		// future
+       | G ctl 		// always
+       | ctl U ctl	// until
+
+(* library functions *)
+val print: n * lattice x -> unit
+val height: lattice x -> int
+val depth: lattice x -> int
+
+STATIC SEMANTICS
+
+Type t ::= int | bool | unit | st | lt | t * t | t -> t
+Set st ::= /t/ | {se,...,se} | {eid,*,eid}
+         | power st | st * st | st + st | st -> st
+Lattice lt ::= flat st | ordered st | power st 
+             | lt * lt | lt + lt | lt -> lt | st -> lt
+E   in Env    = VarEnv + SetEnv + LatEnv
+VE  in VarEnv = VarId -f-> Type
+SE  in SetEnv = SetId -f-> Set
+LE  in LatEnv = LatId -f-> Lattice
+
+Judgement [E,e,t]
+
+[E,x,t] 		iff VE(x)=t
+[E,let dec+ in e end,t] iff [E,dec+,E'], [E+E',e,t]
+[E,fn rule|+|rule,t] 	iff [E,rule|+|rule,t]
+[E,e e',t] 		iff [E,e,t'->t], [E,e',t']
+
+Judgement [E,se,t]
+Judgement [E,le,t]

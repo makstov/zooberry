@@ -1,0 +1,30 @@
+(*
+   Ast for Java's core.
+   Sukyoung Ryu 7/3/2001
+*)
+
+type var = string
+type cls = string
+type exp =
+    Var of var
+  | Ass of var * exp
+  | New of cls
+  | This
+  | Seq of exp * exp
+  | Cond of exp * exp * exp
+  | Thrw of exp
+  | Try of exp * cls * var * exp
+  | App of exp * var * exp
+  | Start of exp
+  | Wait of exp
+  | Notif of exp
+  | Xthrw of exp * exp
+
+val clos: cls -> cls set
+val methods: cls -> var set
+val mkName: cls * var -> var
+val owner: exp -> cls set
+val exps: cls -> exp set
+val body: var -> exp
+val classes: unit -> cls set
+val numExps: unit -> int

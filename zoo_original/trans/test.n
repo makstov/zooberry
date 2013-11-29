@@ -1,0 +1,47 @@
+fun join2 x x' = x+x'
+fun join3 x x' x'' = x+x'+x''
+fun join4 x x' x'' x''' = x+x'+x''+x'''
+fun join5 a b c d e = a+b+c+d+e
+fun join10 a b c d e f g h i j = a+b+c+d+e+f+g+h+i+j    
+fun join20 a b c d e f g h i j a' b' c' d' e' f' g' h' i' j' = a+b+c+d+e+f+g+h+i+j+a'+b'+c'+d'+e'+f'+g'+h'+i'+j'    
+
+fun join nil = 0
+  | join (a::r) = a+join r
+
+fun makelist 0 = nil
+  | makelist n = n::(makelist (n-1))
+
+fun map f nil = nil
+  | map f (a::r) = (f a)::(map f r)
+
+fun mapjoin f nil = 0
+  | mapjoin f (a::r) = (f a)+(mapjoin f r)
+
+val _ = 
+let
+  val size = 100000
+  val a = Array.create size (nil: int list)
+  val _ = for i=0;i<size;i+1 do a.[i] <- makelist 20; () end
+  val start = Unix.times()
+  val _ = for i=0;i<size;i+1 do join (a.[i]); () end
+  val list = Unix.times()       
+  val _ = for i=0;i<size;i+1 do join20 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; () end
+  val curry = Unix.times()
+  val _ = for i=0;i<size;i+1 do join (map (fn x => x+1) a.[i]); () end
+  val map_and_join = Unix.times()
+  val _ = for i=0;i<size;i+1 do mapjoin (fn x => x+1) a.[i]; () end
+  val map_join = Unix.times()
+  val t1 =       (list.tms_utime - start.tms_utime)
+  val t1' =                (list.tms_stime - start.tms_stime)
+  val t2 =       (curry.tms_utime - list.tms_utime)
+  val t2' = (curry.tms_stime - list.tms_stime)
+  val t3 = (map_and_join.tms_utime - curry.tms_utime)
+  val t3' = (map_and_join.tms_stime - curry.tms_stime)
+  val t4 =                (map_join.tms_utime - map_and_join.tms_utime)
+  val t4' =          (map_join.tms_stime - map_and_join.tms_stime)
+in
+  Printf.printf "elmt list version: Usr %.5f, Sys %.5f\n" t1 t1';
+  Printf.printf "elmt curry version: Usr %.5f, Sys %.5f\n" t2 t2';
+  Printf.printf "map;join version: Usr %.5f, Sys %.5f\n" t3 t3';
+  Printf.printf "map&join version: Usr %.5f, Sys %.5f\n" t4 t4'
+end

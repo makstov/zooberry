@@ -1,0 +1,20 @@
+(*
+ Kwangkeun Yi, The LET Project, KAIST
+
+ Copyright(c) 2000-2004 Research On Program Analysis System
+ National Creative Research Initiative Center
+ Korea Advanced Institute of Science & Technology
+ http://ropas.kaist.ac.kr
+
+ All rights reserved. This file is distributed under the terms of
+ an Open Source License.
+*)
+
+(* module for preprocessing rabbit specification *)
+signature PREPROCESS = sig end
+structure Preprocess =
+ struct
+   fun desugar x = x
+ end
+
+

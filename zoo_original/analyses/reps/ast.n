@@ -1,0 +1,77 @@
+(*
+   Ast for LISP's core.
+   Sukyoung Ryu 7/6/2001
+*)
+
+signature Ast =
+sig
+
+type var = string
+type op = string
+type c
+type exp =
+    Var of var
+  | QUOTE of c
+  | CAR of exp
+  | CDR of exp
+  | ATOM of exp
+  | NULL of exp
+  | EQUAL of exp * exp
+  | CONS of exp * exp
+  | IF of exp * exp * exp
+  | CALL of var * exp list
+  | OP of op * exp * exp
+  | DEFINEm of var list * exp
+  | DEFINE of var * var list * exp
+  | NIL
+  | EmptyTree (* ? *)
+type rtg =
+    Atm of atm
+  | Any
+  | Pair of atm * atm
+  | Or of atm * atm
+and atm =
+    Top
+  | Bot
+  | Exp of exp list
+
+val question: c
+
+val piMain: rtg (* program slicing criteria *)
+val main: var
+val top: rtg (* val top = Atm(Top) *)
+val bot: rtg (* val bot = Atm(Bot) *)
+val orBot: rtg (* val orBot = Or(Bot,Bot) *)
+
+val isAtom: c -> bool
+val cons: c * c -> c
+
+val botExp: exp -> rtg (* <\bot,{n}> *)
+val expBot: exp -> rtg (* <{n},\bot> *)
+
+val callsTo: var -> exp set
+val useOf: var -> exp set
+val join: rtg set -> rtg
+val args: var * exp list -> (var * exp) set
+
+val isTop: rtg -> bool
+val isBot: rtg -> bool
+val isOr: rtg -> bool
+val isSomeTop: rtg -> bool
+val isSomeBot: rtg -> bool
+val isTopSome: rtg -> bool
+val isBotSome: rtg -> bool
+val isOrSomeTop: rtg -> bool
+val isOrSomeBot: rtg -> bool
+val isOrTopSome: rtg -> bool
+val isOrBotSome: rtg -> bool
+
+val list2set: 'a list -> 'a set
+val map2list: 'a map -> 'a list
+val len: 'a list -> int
+val nth: 'a list * int -> 'a
+
+val rtg2set: rtg -> exp set
+val normal: rtg -> rtg
+
+end (* Ast *)

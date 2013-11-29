@@ -1,0 +1,98 @@
+<html>
+<head>
+<title>Zoo Program Analysis System</title>
+<!--meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"-->
+</head>
+<body bgcolor=#fffccc text=#666666 link=#6600cc>
+
+<center>
+<h1><font face="times new roman"> Program Analysis System Zoo</font>
+</h1>
+<!img src=n-logo.gif height=100><br>
+<font size=5 face="Times New Roman">
+<a href=/><img border=0 src=/logo-anim.gif height=38></a><br>
+<a href=/>ROPAS: Research On Program Analysis System</a><br>
+<font size=4 face="Times New Roman"><a href=http://www.kistep.re.kr/main00/project01/main/ks8/index.asp?subj=0&prj=8#>
+National Creative Research Initiatives Center</a></font><br>
+<a href=http://www.snu.ac.kr/>SNU</a><br>
+</font>
+</center>
+
+<br>
+
+<h2><font face="Times New Roman">Overview</font></h2>
+<ul>
+<li>We need a convenient tool to generate realistic program
+analyzers. We first aim it for being used in our <a 
+href=/let-e.html>LET Project</a>, in developing our <a href=/n>nML
+compiler</a> for FCC (fixpoint-carrying-code). 
+<li>The best way to transfer our program analysis technology to
+the industry is to provide a convenient high-level tool.
+<li>System Zoo supports an ensemble of various program analysis frameworks:
+abstract interpretation, data flow analysis, set-based analysis,
+type-based analysis, and model checking.
+</ul>
+
+<h2><font face="Times New Roman">The Specification Language Rabbit</font></h2>
+<img src=rabbit-logo.jpg height=250>
+<img src=/~kwang/icons/seal.jpg height=25>
+<br>
+Rabbit is for an ensemble of abstract interpretation, set-based
+analysis, higher-order data flow analysis, and model checking. <br>
+The language definition (syntax and well-formedness rules) is
+available: 
+<ul>
+<!--<li>(English) [<a href=doc/rabbit-e.ps>postscript</a>, <a
+href=doc/rabbit-e.pdf>pdf</a>] <br>-->
+<li>(Korean) [<a href=doc/rabbit.ps>postscript</a>, <a
+href=doc/rabbit.pdf>pdf</a>] 
+</ul>
+
+<h2><font face="Times New Roman">Related Papers/Talks</font></h2>
+<ul>
+<li> <strong><a href=/~kwang/talk/ens01-slides/tp.cgi?ens01-slides>Talk
+slides</a></strong> at <a href=http://www.di.ens.fr>ENS</a>, 7/13/2001
+<li> <strong><a href=/~kwang/talk/snu-2002-slides.pdf>Talk slides</a></strong>
+at <a href=http://www.snu.ac.kr>SNU</a>, 11/11/2002
+<li> <strong>Static Monotonicity Analysis for Lambda-definable
+Functions over Lattices </strong>
+     <br>
+     [<a href=/~kwang/paper/02-vmcai-muyi.pdf>pdf</a>/
+      <a href=/~kwang/cgi-bin/biblio-search.pl?key=MuYi02>bibtex</a>]
+     <br>
+     <a href=http://web.comlab.ox.ac.uk/oucl/people/andrzej.murawski.html>
+     Andrzej Murawski</a> and <a href=/~kwang>Kwangkeun Yi</a>
+     <br>
+     Lecture Notes in Computer Science, Vol.2294, pp.139-153
+     <br>
+     <a href=http://www.dsi.unive.it/~cortesi/vmcai02.htm>
+     Third International Workshop on Verification, Model Checking and
+     Abstract Interpretation</a>, Venice, January 21-22, 2002
+<li> <strong>Static Extensionality Analysis for Lambda-definable
+Functions over Lattices </strong>
+<br>
+    [<a href=/lib/dock/YiEo2002.pdf>pdf</a>/
+     <a href=/lib/pd-bib.pl?key=YiEo2002>bibtex</a>]
+<br> <a href=/~kwang>Kwangkeun Yi</a> and <a href=/~poisson>Hyunjun Eo</a>
+<br> ROPAS Technicaml Memo, No.2002-17, Oct. 2002
+<li> <strong>Type Inference and Sanity Checks for Rabbit Program
+     Analysis Specifications</strong>
+     <br> <a href=/~bluewiz>Youil Kim</a>
+     <br> Master Thesis, KAIST, Feb. 2003
+</ul>
+
+<!--
+<h2>The Specification Language Beetle</h2>
+Beetle is for an ensemble of type-based analysis and model
+checking. The generated analyzer will be tightly coupled with the
+type-inference phase of our <a href=/n>nML compiler system</a>.
+-->
+<p>
+<hr>
+<font size=3>
+<img src=/logo-anim.gif height=19>
+<a href=/>ROPAS: Research On Program Analysis System</a>/
+<a href=http://210.219.36.9/cri/index.asp>
+National Creative Research Initiatives Center</a>/
+<a href=http://www.snu.ac.kr/>SNU</a>
+</font>

@@ -1,0 +1,16 @@
+structure Ast =
+struct
+    type id = string
+    type bop = ADD | SUB | MUL | DIV | EQ | LT | GT | AND | OR
+    type exp = INT of int
+             | VAR of id
+             | FN of id * exp
+             | FX of id * exp
+             | APP of exp * exp
+             | LET of decl * exp
+             | IF of exp * exp * exp
+             | BOP of bop * exp * exp
+             | READ
+             | WRITE of exp
+    and decl = id * exp
+end

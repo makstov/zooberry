@@ -1,0 +1,40 @@
+(* this test is to see the overhead of exceptions against pattern match in control handling
+
+   case e
+    of p1 => e1
+     | p2 => e2
+
+   v.s.
+
+   (case e of x => if x match p1 then e1 else raise E)
+   handle E => if x match p2 then e2 else raise E
+*)
+  
+exception E
+
+fun loop n =
+  if n=0 then ()
+      else case n
+            of 0 => loop (n-1)
+             | x => loop (n-1)
+
+fun loopexn n =
+  if n=0 then ()
+      else (case n
+            of x => if x=0 then loop(n-1) else raise E)
+           handle E => loop(n-1)
+
+val _ = 
+let
+  val n = 100000000000
+  val start = Unix.gettimeofday()
+  val _ = loop n
+  val switch = Unix.gettimeofday()
+  val _ = loopexn n
+  val exn = Unix.gettimeofday()
+  val t1 = switch-start
+  val t2 = exn-switch
+in
+  Printf.printf "control by switch: %.5f\n" t1;
+  Printf.printf "control by exn: %.5f\n" t2
+end

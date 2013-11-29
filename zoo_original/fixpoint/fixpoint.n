@@ -1,0 +1,136 @@
+signature CONTEXT =
+  sig
+    structure Pre: LATTICE
+    structure Post: LATTICE
+    structure Program: PROGRAM
+    structure Semantics: sig
+			   val F_z_ : (Program.syntree * Pre.elmt Pre.t
+				       -> Post.elmt Post.t)
+			              * Program.syntree * Pre.elmt Pre.t
+			              -> Post.elmt Post.t
+			   val init'pre'state : Pre.elmt Pre.t
+			 end
+  end
+
+signature FIXPOINT =
+    sig
+      structure Context : CONTEXT
+      val Tabulate: Context.Program.syntree ->
+	              (Context.Pre.elmt Context.Pre.t array)
+		    * (Context.Post.elmt Context.Post.t array)
+    end
+  
+functor FixpointFun(Context: CONTEXT) : FIXPOINT = 
+    struct
+        structure Context = Context
+	val exprs = ref 0		(* number of expressions *)
+	val N = ref (ByteArray.array(0,0))     (* N[i] = 1 iff i is in Graph *)
+	val I = ref (Array.array(0,[]:int list)) (* Graph as linked list *)
+	val W_f = ref (ByteArray.array(0,0))   (* W_f[i] = 1 iff i is in Q_f *)
+	val W_b = ref (ByteArray.array(0,0))   (* W_b[i] = 1 iff i is in Q_b *)
+	val Tx: Context.Pre.elmt Context.Pre.t array ref = ref (Array.array(0, Context.Pre.BOT))
+	val Ty: Context.Post.elmt Context.Post.t array ref = ref (Array.array(0, Context.Post.BOT))
+        (* exprs, N, I, W_f, W_b, Tx, and Ty are initialized by initialize()
+           with right size after source program is parsed *)
+	val w = ref 0
+	val Q_f: int Queue.queue = Queue.mkQueue()
+	val Q_b: int Queue.queue = Queue.mkQueue()
+
+	fun initialize() =
+	  let
+	    val _ = exprs := Context.Program.numOfExprs()
+	    val _ = N := ByteArray.array(!exprs,0)
+	    val _ = I := Array.array(!exprs,[]:int list)
+	    val _ = W_f := ByteArray.array(!exprs,0)
+	    val _ = W_b := ByteArray.array(!exprs,0)
+	    val _ = Tx := Array.array(!exprs, Context.Pre.BOT)
+	    val _ = Ty := Array.array(!exprs, Context.Post.BOT)
+	  in () end
+	
+	fun isIn (a,n) = (ByteArray.sub(a,n) = 1)
+	fun addTo (a,n) = ByteArray.update(a,n,1)
+	fun removeFrom (a,n) = ByteArray.update(a,n,0)
+
+	fun f (pgm_point, pre_state) : Context.Post.elmt Context.Post.t = 
+	    let val xi = Context.Program.syntreeToIndex(pgm_point)
+		val _ = if not (isIn(!N, xi)) orelse
+		           not (Context.Pre.le(pre_state, Array.sub(!Tx,xi)))
+			  then
+		           let val _ = Array.update(!Tx, xi,
+						    Context.Pre.join(Array.sub(!Tx,xi),
+							     pre_state)
+						    )
+			       val _ = addTo(!N,xi)
+			   in if not (isIn(!W_f,xi)) then
+			       (addTo(!W_f,xi);
+			        Queue.enqueue(Q_f, xi))
+			      else ()
+			   end
+			else () 
+	    in
+	      (* record w -> xi *)
+	      Array.update(!I, xi, (!w)::(Array.sub(!I, xi)));
+	      Array.sub(!Ty, xi)
+	    end
+
+	fun element() =
+	  if not (Queue.isEmpty(Q_f)) then
+	    let
+	      val i = Queue.dequeue(Q_f)
+	      val _ = removeFrom(!W_f,i)
+	    in i
+	    end
+	  else if not (Queue.isEmpty(Q_b)) then
+	    let
+	      val i = Queue.dequeue(Q_b)
+	      val _ = removeFrom(!W_b, i)
+	    in i
+	    end
+	  else ~1
+
+	fun Tabulate(program) = 
+	    let 
+	        val _ = initialize()
+	        val xi0 = Context.Program.syntreeToIndex(program)
+		val _ = addTo(!N,xi0)
+		val _ = Array.update(!Tx, xi0, Context.Semantics.init'pre'state)
+		val _ = w := xi0
+		val iter = ref 0
+		fun iterate() = 
+	          if (!w >= 0) then 
+		    let
+		      val _ = iter := !iter + 1
+		      val _ = if (Bits.andb(!iter, 1023) = 0)
+			    then (output(std_out, "."); flush_out std_out)
+			  else ()
+		      val x = Array.sub(!Tx, !w)
+		      val y = Context.Semantics.F_z_(f, Context.Program.indexToSyntree(!w), x)
+		      val moved = not (Context.Post.le(y, Array.sub(!Ty,!w)))
+		      val _ =
+			if moved then
+			  let
+			    val _ = Array.update(!Ty, !w, y)
+			    val entails = Array.sub(!I, !w)
+			    fun addW ([]) = ()
+			      | addW (a::b) =
+				(if not (isIn(!W_b, a))
+				   then (addTo(!W_b, a);
+					 Queue.enqueue(Q_b, a))
+				 else ();
+				   addW(b)) 
+			  in addW(entails)
+			  end
+			else ()
+		      val _ = w := element()
+		    in 
+		      iterate()
+		    end
+		  else ()
+	    in
+	      (iterate();
+	       output (std_out, Format.format "\n%d Iterations."
+		       [Format.INT(!iter)]);
+	       (!Tx, !Ty))
+	    end
+    end
+

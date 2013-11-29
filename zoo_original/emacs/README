@@ -1,0 +1,23 @@
+Files for R mode (adapted from OCaml-2.04/emacs). Kwang, June 2001
+
+How to install:
+
+1. Copy {r.el, r-font.el, r-compat.el}
+   to your emacs path directory.
+
+   If you put them in, say, /home/me/emacs,
+   then don't forget to add the path to your load-path as follows:
+
+     (setq load-path
+             (append load-path
+                     (list "/home/me/emacs")))
+
+2. Add the following lines to your .emacs files
+
+    (setq auto-mode-alist
+          (append '(("\\.r[i]?" . r-mode))
+    		auto-mode-alist))
+    (autoload 'r-mode "r" "Major mode for editing R code." t)
+    (require 'r-font)
+
+3. Done.
