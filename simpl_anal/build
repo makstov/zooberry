@@ -1,0 +1,17 @@
+#!/bin/bash
+
+function clean
+{
+	ocamlbuild -clean
+	exit 0
+}
+
+while [ ! -z $1 ]; do
+	case $1 in
+		clean) "$1" ;;
+		*)
+	esac
+	shift
+done
+
+ocamlbuild main.native -Is syntax,domain,semantics
